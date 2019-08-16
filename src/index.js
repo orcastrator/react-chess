@@ -1,7 +1,20 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import "./index.css";
-import { ChessPiece, WhiteBishop, BlackBishop } from "./chess-pieces";
+import {
+    WhiteBishop,
+    BlackBishop,
+    WhiteKing,
+    BlackKing,
+    WhiteKnight,
+    BlackKnight,
+    WhitePawn,
+    BlackPawn,
+    WhiteQueen,
+    BlackQueen,
+    WhiteRook,
+    BlackRook
+} from "./chess-pieces";
 
 function Square(props) {
     if (props.color === "white") {
@@ -23,9 +36,36 @@ class Board extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            squares: Array(8).fill(Array(8).fill(null)),
+            squares: [
+                [
+                    BlackRook,
+                    BlackKnight,
+                    BlackBishop,
+                    BlackQueen,
+                    BlackKing,
+                    BlackBishop,
+                    BlackKnight,
+                    BlackRook
+                ],
+                Array(8).fill(BlackPawn),
+                Array(8).fill(null),
+                Array(8).fill(null),
+                Array(8).fill(null),
+                Array(8).fill(null),
+                Array(8).fill(WhitePawn),
+                [
+                    WhiteRook,
+                    WhiteKnight,
+                    WhiteBishop,
+                    WhiteQueen,
+                    WhiteKing,
+                    WhiteBishop,
+                    WhiteKnight,
+                    WhiteRook
+                ]
+            ],
             whiteIsNext: true,
-            selectedPiece: ChessPiece
+            selectedPiece: null
         };
     }
 
@@ -33,16 +73,25 @@ class Board extends React.Component {
         // slice performs a deep copy
         // all arrays in javascript are pointers, therefore const will not prevent you from changing its values
         const squares = this.state.squares.slice();
-        if (calculateWinner(squares) || squares[i][j]) {
+        if (calculateWinner(squares)) {
             return;
         }
+
+        if (squares[i][j]) {
+            console.log(squares[i][j].props.alt);
+
+            return;
+        }
+
+        console.log("click");
 
         let { whiteIsNext } = this.state;
 
         // performs a deep copy
         const square_array = squares[i].slice();
-        if (whiteIsNext) square_array[j] = WhiteBishop.state.icon;
-        else square_array[j] = BlackBishop.state.icon;
+        const wb = <WhiteBishop id="1" />;
+        if (whiteIsNext) square_array[j] = wb;
+        else square_array[j] = BlackBishop;
         squares[i] = square_array;
 
         this.setState({
