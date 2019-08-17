@@ -18,10 +18,7 @@ class ChessPiece extends React.Component {
         super(props);
         this.state = {
             possibleMoves: Array(1).fill(null),
-            currentBlock: Array(2).fill(null),
-            icon: props.icon,
-            alt: props.alt,
-            id: null
+            currentPosition: Array(2).fill(null),
         };
     }
 
@@ -31,18 +28,137 @@ class ChessPiece extends React.Component {
     }
 }
 
-const WhiteBishop = <ChessPiece icon={white_bishop} alt="white_bishop" />;
-const BlackBishop = <ChessPiece icon={black_bishop} alt="black_bishop" />;
-const WhiteKing = <ChessPiece icon={white_king} alt="white_king" />;
-const BlackKing = <ChessPiece icon={black_king} alt="black_king" />;
-const WhiteKnight = <ChessPiece icon={white_knight} alt="white_knight" />;
-const BlackKnight = <ChessPiece icon={black_knight} alt="black_knight" />;
-const WhitePawn = <ChessPiece icon={white_pawn} alt="white_pawn" />;
-const BlackPawn = <ChessPiece icon={black_pawn} alt="black_pawn" />;
-const WhiteQueen = <ChessPiece icon={white_queen} alt="white_queen" />;
-const BlackQueen = <ChessPiece icon={black_queen} alt="black_queen" />;
-const WhiteRook = <ChessPiece icon={white_rook} alt="white_rook" />;
-const BlackRook = <ChessPiece icon={black_rook} alt="black_rook" />;
+class WhiteBishop extends ChessPiece {
+    constructor(props) {
+        super(props);
+        this.state = {
+            icon: white_bishop,
+            alt: "white_bishop",
+            color: "white",
+        }
+    }
+}
+
+class WhiteKing extends ChessPiece {
+    constructor(props) {
+        super(props);
+        this.state = {
+            icon: white_king,
+            alt: "white_king",
+            color: "white",
+        }
+    }
+}
+
+class WhiteKnight extends ChessPiece {
+    constructor(props) {
+        super(props);
+        this.state = {
+            icon: white_knight,
+            alt: "white_knight",
+            color: "white",
+        }
+    }
+}
+
+class WhiteRook extends ChessPiece {
+    constructor(props) {
+        super(props);
+        this.state = {
+            icon: white_rook,
+            alt: "white_rook",
+            color: "white",
+        }
+    }
+}
+
+class WhiteQueen extends ChessPiece {
+    constructor(props) {
+        super(props);
+        this.state = {
+            icon: white_queen,
+            alt: "white_queen",
+            color: "white",
+        }
+    }
+}
+
+class WhitePawn extends ChessPiece {
+    constructor(props) {
+        super(props);
+        this.state = {
+            icon: white_pawn,
+            alt: "white_pawn",
+            color: "white",
+        }
+    }
+}
+
+class BlackBishop extends ChessPiece {
+    constructor(props) {
+        super(props);
+        this.state = {
+            icon: black_bishop,
+            alt: "black_bishop",
+            color: "black",
+        }
+    }
+}
+
+class BlackKing extends ChessPiece {
+    constructor(props) {
+        super(props);
+        this.state = {
+            icon: black_king,
+            alt: "black_king",
+            color: "black",
+        }
+    }
+}
+
+class BlackKnight extends ChessPiece {
+    constructor(props) {
+        super(props);
+        this.state = {
+            icon: black_knight,
+            alt: "black_knight",
+            color: "black",
+        }
+    }
+}
+
+class BlackRook extends ChessPiece {
+    constructor(props) {
+        super(props);
+        this.state = {
+            icon: black_rook,
+            alt: "black_rook",
+            color: "black",
+        }
+    }
+}
+
+class BlackQueen extends ChessPiece {
+    constructor(props) {
+        super(props);
+        this.state = {
+            icon: black_queen,
+            alt: "black_queen",
+            color: "black",
+        }
+    }
+}
+
+class BlackPawn extends ChessPiece {
+    constructor(props) {
+        super(props);
+        this.state = {
+            icon: black_pawn,
+            alt: "black_pawn",
+            color: "black",
+        }
+    }
+}
 
 export {
     WhiteBishop,
