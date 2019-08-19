@@ -1,20 +1,36 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import "./index.css";
-import {
-    WhiteBishop,
-    BlackBishop,
-    WhiteKing,
-    BlackKing,
-    WhiteKnight,
-    BlackKnight,
-    WhitePawn,
-    BlackPawn,
-    WhiteQueen,
-    BlackQueen,
-    WhiteRook,
-    BlackRook
-} from "./chess-pieces";
+
+import { defaultStart/*, testEnPassant, testNoPawns*/ } from "./start-positions.js";
+
+// var SpecialMoves = {
+//     Normal: 0,
+//     KnightNormal: 1,
+//     EnPassant: 2,
+//     Castle: 3,
+//     Promotion: 4
+// };
+
+const iToNum = new Map();
+// {0: 8}, {1: 7}, {2: 6}, {3: 5}, {4: 4}, {5: 3}, {6: 2}, {7: 1}
+iToNum.set(0, 8);
+iToNum.set(1, 7);
+iToNum.set(2, 6);
+iToNum.set(3, 5);
+iToNum.set(4, 4);
+iToNum.set(5, 3);
+iToNum.set(6, 2);
+iToNum.set(7, 1);
+const jToAlpha = new Map();
+jToAlpha.set(0, "a");
+jToAlpha.set(1, "b");
+jToAlpha.set(2, "c");
+jToAlpha.set(3, "d");
+jToAlpha.set(4, "e");
+jToAlpha.set(5, "f");
+jToAlpha.set(6, "g");
+jToAlpha.set(7, "h");
 
 function Square(props) {
     if (props.color === "white") {
@@ -38,49 +54,98 @@ function Square(props) {
     }
 }
 
+// stockfish basic commands https://www.reddit.com/r/chess/comments/ad4h1k/stockfishs_basic_commands/
 class Board extends React.Component {
     constructor(props) {
         super(props);
 
         this.isKingInCheck = this.isKingInCheck.bind(this);
-        this.isValidMove = this.isValidMove.bind(this);
+        this.toFenNotation = this.toFenNotation.bind(this);
+        this.findPieces = this.findPieces.bind(this);
+        this.isKingInCheck = this.isKingInCheck.bind(this);
         this.handleClick = this.handleClick.bind(this);
         this.renderSquare = this.renderSquare.bind(this);
 
         this.state = {
-            squares: [
-                [
-                    new BlackRook(),
-                    new BlackKnight(),
-                    new BlackBishop(),
-                    new BlackQueen(),
-                    new BlackKing(),
-                    new BlackBishop(),
-                    new BlackKnight(),
-                    new BlackRook()
-                ],
-                Array(8).fill(new BlackPawn()),
-                Array(8).fill(null),
-                Array(8).fill(null),
-                Array(8).fill(null),
-                Array(8).fill(null),
-                Array(8).fill(new WhitePawn()),
-                [
-                    new WhiteRook(),
-                    new WhiteKnight(),
-                    new WhiteBishop(),
-                    new WhiteQueen(),
-                    new WhiteKing(),
-                    new WhiteBishop(),
-                    new WhiteKnight(),
-                    new WhiteRook()
-                ]
-            ],
+            squares: defaultStart,
             whiteIsNext: true,
             selectedPiece: null,
-            selectedI: null,
-            selectedJ: null
+            whiteCastleKingSide: true,
+            whiteCastleQueenSide: true,
+            blackCastleKingSide: true,
+            blackCastleQueenSide: true,
+            enPassantSquare: null,
         };
+    }
+
+    toFenNotation() {
+        let {
+            squares,
+            whiteIsNext,
+            whiteCastleKingSide,
+            whiteCastleQueenSide,
+            blackCastleKingSide,
+            blackCastleQueenSide,
+            enPassantSquare
+        } = this.state;
+
+        var fenNotation = "";
+        for (var i = 0; i < squares.length; i++) {
+            var concurrentEmptySquaresCount = 0;
+            for (var j = 0; j < squares[i].length; j++) {
+                if (squares[i][j] && squares[i][j].state.type) {
+                    if (concurrentEmptySquaresCount !== 0) {
+                        fenNotation += concurrentEmptySquaresCount;
+                        concurrentEmptySquaresCount = 0;
+                    }
+                    fenNotation += squares[i][j].state.fen;
+                } else {
+                    concurrentEmptySquaresCount++;
+                }
+            }
+            if (concurrentEmptySquaresCount !== 0) {
+                fenNotation += concurrentEmptySquaresCount;
+            }
+            if (i !== squares.length - 1) fenNotation += "/";
+        }
+
+        fenNotation += whiteIsNext ? " w " : " b ";
+
+        // TODO: implement castling
+        fenNotation += whiteCastleKingSide ? "K" : "";
+        fenNotation += whiteCastleQueenSide ? "Q" : "";
+        fenNotation += blackCastleKingSide ? "k" : "";
+        fenNotation += blackCastleQueenSide ? "q" : "";
+        fenNotation +=
+            !whiteCastleKingSide &&
+            !whiteCastleQueenSide &&
+            !blackCastleKingSide &&
+            !blackCastleQueenSide
+                ? "-"
+                : "";
+        fenNotation += enPassantSquare
+            ? " " +
+              jToAlpha.get(enPassantSquare[1]) +
+              iToNum.get(enPassantSquare[0]) +
+              " "
+            : " - ";
+        fenNotation += "0";
+        return fenNotation;
+    }
+
+    findPieces(name) {
+        let { squares } = this.state;
+        var found = [];
+        for (var k = 0; k < squares.length; k++) {
+            for (var l = 0; l < squares[k].length; l++) {
+                if (squares[k][l]) {
+                    if (squares[k][l].state.name === name) {
+                        found.push(squares[k][l]);
+                    }
+                }
+            }
+        }
+        return found;
     }
 
     isKingInCheck(i, j) {
@@ -110,171 +175,91 @@ class Board extends React.Component {
         }
     }
 
-    isValidMove(i, j) {
-        let { squares, selectedPiece, selectedI, selectedJ } = this.state;
-
-        let { name, color, type } = selectedPiece.state;
-        if (squares[i][j] && squares[i][j].state.color === color) {
-            return false;
-        }
-
-        let validMoves = [];
-        if (name === "white_pawn") {
-            if (squares[i][j]) validMoves.push([-1, -1], [-1, 1]);
-            else {
-                if (selectedI === 6) validMoves.push([-2, 0]);
-                validMoves.push([-1, 0]);
-            }
-        } else if (name === "black_pawn") {
-            if (squares[i][j]) validMoves.push([1, -1], [1, 1]);
-            else {
-                if (selectedI === 1) validMoves.push([2, 0]);
-                validMoves.push([1, 0]);
-            }
-        } else if (type === "king") {
-            for (var k = -1; k < 2; k++) {
-                for (var l = -1; l < 2; l++) {
-                    if (k !== 0 || l !== 0) validMoves.push([k, l]);
-                }
-            }
-        } else if (type === "knight") {
-            validMoves.push(
-                [1, 2],
-                [-1, 2],
-                [1, -2],
-                [-1, -2],
-                [2, 1],
-                [-2, 1],
-                [2, -1],
-                [-2, -1]
-            );
-        } else if (type === "bishop") {
-            selectedPiece.getColor();
-            for (k = 1; k <= 8; k++) {
-                validMoves.push([k, k]);
-                validMoves.push([k, -k]);
-                validMoves.push([-k, k]);
-                validMoves.push([-k, -k]);
-            }
-        } else if (type === "rook") {
-            for (k = 1; k <= 8; k++) {
-                validMoves.push([k, 0]);
-                validMoves.push([-k, 0]);
-                validMoves.push([0, k]);
-                validMoves.push([0, -k]);
-            }
-        } else if (type === "queen") {
-            for (k = 1; k <= 8; k++) {
-                validMoves.push([k, 0]);
-                validMoves.push([-k, 0]);
-                validMoves.push([0, k]);
-                validMoves.push([0, -k]);
-                validMoves.push([k, k]);
-                validMoves.push([k, -k]);
-                validMoves.push([-k, k]);
-                validMoves.push([-k, -k]);
-            }
-        }
-
-        // check all valid moves
-        for (k = 0; k < validMoves.length; k++) {
-            if (
-                i === selectedI + validMoves[k][0] &&
-                j === selectedJ + validMoves[k][1]
-            )
-                return true;
-        }
-        return false;
-    }
-
     handleClick(i, j) {
         // slice() performs a deep copy
         // all arrays in javascript are pointers, therefore const will not prevent you from changing its values
         const squares = this.state.squares.slice();
-        let { whiteIsNext, selectedPiece, selectedI, selectedJ } = this.state;
 
-        if (
-            calculateWinner(squares) || // calculate winner is not done yet
-            (!selectedPiece && !squares[i][j])
-        ) {
+        let { whiteIsNext, selectedPiece } = this.state;
+
+        if (!selectedPiece) {
             // if nothing was selected and the selected square is empty, do nothing
-            return;
-        }
+            if (!squares[i][j]) return;
+            // if white is next and black is selected, do nothing
+            if (whiteIsNext && squares[i][j].state.color !== "white") return;
+            // if black is next and white is selected, do nothing
+            if (!whiteIsNext && squares[i][j].state.color !== "black") return;
 
-        if (selectedPiece && !this.isValidMove(i, j)) {
-            // if the selected square is invalid for the piece type, deselect that square
+            squares[i][j].state.position = [i, j];
+
+            // select the piece
             this.setState({
-                selectedI: null,
-                selectedJ: null,
-                selectedPiece: null
+                selectedPiece: squares[i][j]
             });
             return;
         }
 
-        // TODO limit movement of pieces
-        if (!selectedPiece && squares[i][j]) {
-            if (
-                (whiteIsNext && squares[i][j].state.color === "white") ||
-                (!whiteIsNext && squares[i][j].state.color === "black")
-            ) {
-                // if nothing was selected and the selected square is valid, save the selection
-                this.setState({
-                    selectedI: i,
-                    selectedJ: j,
-                    selectedPiece: squares[i][j]
-                });
+        if (squares[i][j]) {
+            if (squares[i][j].state.color === "white" && whiteIsNext) {
+                squares[i][j].state.position = [i, j];
+                this.setState({ selectedPiece: squares[i][j] });
+                return;
             }
-            return;
-        } else if (selectedPiece && selectedI === i && selectedJ === j) {
-            // if something is selected and the selected square is the same, deselect that square
+            if (squares[i][j].state.color === "black" && !whiteIsNext) {
+                squares[i][j].state.position = [i, j];
+                this.setState({ selectedPiece: squares[i][j] });
+                return;
+            }
+        }
+
+        // check if valid move
+        if (!selectedPiece.isValidMove([i, j], squares)) {
+            console.log(
+                selectedPiece.state.position[0] +
+                    "," +
+                    selectedPiece.state.position[1] +
+                    " to " +
+                    i +
+                    "," +
+                    j +
+                    " is not a valid move for the " +
+                    selectedPiece.state.name
+            );
+
             this.setState({
-                selectedI: null,
-                selectedJ: null,
                 selectedPiece: null
             });
             return;
         }
 
+        console.log(selectedPiece.state.name, "moves from", selectedPiece.state.position[0] + "," + selectedPiece.state.position[1], "to", i + "," + j);
+        squares[selectedPiece.state.position[0]][selectedPiece.state.position[1]] = null;
         squares[i][j] = selectedPiece;
-        squares[selectedI][selectedJ] = null;
-
-        squares[i][j].setState({
-            moved: true
-        });
 
         this.setState({
             squares: squares,
-            whiteIsNext: !this.state.whiteIsNext,
-            selectedPiece: null,
-            selectedI: null,
-            selectedJ: null
+            whiteIsNext: !whiteIsNext,
+            selectedPiece: null
         });
         this.render();
     }
 
     renderSquare(i, j) {
         let color;
-        if (i % 2 === 0) {
-            if (j % 2 === 0) {
-                color = "white";
-            } else {
-                color = "black";
-            }
+
+        if ((i + j) % 2 === 0) {
+            color = "white";
         } else {
-            if (j % 2 === 0) {
-                color = "black";
-            } else {
-                color = "white";
-            }
+            color = "black";
         }
 
-        const { squares, selectedI, selectedJ } = this.state;
+        const { squares, selectedPiece } = this.state;
 
-        if (i === selectedI && j === selectedJ) {
+        if (selectedPiece && selectedPiece === squares[i][j])
             color = "selected";
-        }
 
         var square = squares[i][j] ? squares[i][j].render() : squares[i][j];
+
         return (
             <Square
                 value={square}
@@ -285,14 +270,7 @@ class Board extends React.Component {
     }
 
     render() {
-        const winner = calculateWinner(this.state.squares);
-        let status;
-        if (winner) {
-            status = "Winner: " + winner;
-        } else {
-            status =
-                "Next player: " + (this.state.whiteIsNext ? "White" : "Black");
-        }
+        let nextPlayer = this.state.whiteIsNext ? "White" : "Black";;
 
         let board = [];
         for (let i = 0; i < 8; i++) {
@@ -303,9 +281,18 @@ class Board extends React.Component {
             board.push(<div className="board-row">{boardRow}</div>);
         }
 
+        const fenNotation = this.toFenNotation();
+
         return (
             <div>
-                <div className="status">{status}</div>
+                <div className="status">
+                    <b>Next Player:</b> {nextPlayer}
+                </div>
+                <div className="status">
+                    position fen {fenNotation}
+                    <p />
+                    go searchmoves
+                </div>
                 {board}
             </div>
         );
@@ -326,10 +313,6 @@ class Game extends React.Component {
             </div>
         );
     }
-}
-
-function calculateWinner(squares) {
-    return null;
 }
 
 // ========================================
