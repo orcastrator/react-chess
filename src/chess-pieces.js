@@ -14,17 +14,9 @@ import white_rook from "./chess-icons/rook-50-white.png";
 import black_rook from "./chess-icons/rook-50-black.png";
 
 class ChessPiece extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            possibleMoves: Array(1).fill(null),
-            currentPosition: Array(2).fill(null),
-        };
-    }
-
     render() {
-        let { icon, alt } = this.state;
-        return <img src={icon} alt={alt} />;
+        let { icon, name } = this.state;
+        return <img src={icon} alt={name} />;
     }
 }
 
@@ -33,9 +25,10 @@ class WhiteBishop extends ChessPiece {
         super(props);
         this.state = {
             icon: white_bishop,
-            alt: "white_bishop",
+            name: "white_bishop",
             color: "white",
-        }
+            type: "bishop"
+        };
     }
 }
 
@@ -44,9 +37,10 @@ class WhiteKing extends ChessPiece {
         super(props);
         this.state = {
             icon: white_king,
-            alt: "white_king",
+            name: "white_king",
             color: "white",
-        }
+            type: "king"
+        };
     }
 }
 
@@ -55,9 +49,10 @@ class WhiteKnight extends ChessPiece {
         super(props);
         this.state = {
             icon: white_knight,
-            alt: "white_knight",
+            name: "white_knight",
             color: "white",
-        }
+            type: "knight"
+        };
     }
 }
 
@@ -66,9 +61,10 @@ class WhiteRook extends ChessPiece {
         super(props);
         this.state = {
             icon: white_rook,
-            alt: "white_rook",
+            name: "white_rook",
             color: "white",
-        }
+            type: "rook"
+        };
     }
 }
 
@@ -77,20 +73,23 @@ class WhiteQueen extends ChessPiece {
         super(props);
         this.state = {
             icon: white_queen,
-            alt: "white_queen",
+            name: "white_queen",
             color: "white",
-        }
+            type: "queen"
+        };
     }
 }
 
 class WhitePawn extends ChessPiece {
     constructor(props) {
         super(props);
+
         this.state = {
             icon: white_pawn,
-            alt: "white_pawn",
+            name: "white_pawn",
             color: "white",
-        }
+            type: "pawn"
+        };
     }
 }
 
@@ -99,9 +98,10 @@ class BlackBishop extends ChessPiece {
         super(props);
         this.state = {
             icon: black_bishop,
-            alt: "black_bishop",
+            name: "black_bishop",
             color: "black",
-        }
+            type: "bishop"
+        };
     }
 }
 
@@ -110,9 +110,10 @@ class BlackKing extends ChessPiece {
         super(props);
         this.state = {
             icon: black_king,
-            alt: "black_king",
+            name: "black_king",
             color: "black",
-        }
+            type: "king"
+        };
     }
 }
 
@@ -121,9 +122,10 @@ class BlackKnight extends ChessPiece {
         super(props);
         this.state = {
             icon: black_knight,
-            alt: "black_knight",
+            name: "black_knight",
             color: "black",
-        }
+            type: "knight"
+        };
     }
 }
 
@@ -132,9 +134,10 @@ class BlackRook extends ChessPiece {
         super(props);
         this.state = {
             icon: black_rook,
-            alt: "black_rook",
+            name: "black_rook",
             color: "black",
-        }
+            type: "rook"
+        };
     }
 }
 
@@ -143,9 +146,10 @@ class BlackQueen extends ChessPiece {
         super(props);
         this.state = {
             icon: black_queen,
-            alt: "black_queen",
+            name: "black_queen",
             color: "black",
-        }
+            type: "queen"
+        };
     }
 }
 
@@ -154,9 +158,10 @@ class BlackPawn extends ChessPiece {
         super(props);
         this.state = {
             icon: black_pawn,
-            alt: "black_pawn",
+            name: "black_pawn",
             color: "black",
-        }
+            type: "pawn"
+        };
     }
 }
 
